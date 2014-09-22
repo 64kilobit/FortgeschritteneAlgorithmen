@@ -21,17 +21,22 @@ public class Data {
 	public List<Subject> subjectPopulation = new ArrayList<Subject>();
 	public int[][] combinations;
 
-	// tesing
+	// for tesing
 	public static void main(String[] args) {
 		Data data = new Data();
 		data.loadCombinations();
+		data.debug();
+	}
+
+	public void debug() {
 		// print combination matrix
-		for (int i = 0; i < data.combinations.length; i++) {
-			System.out.println(Arrays.toString(data.combinations[i]));
+		System.out.println("Printing Combination Matrix");
+		for (int i = 0; i < combinations.length; i++) {
+			System.out.println(Arrays.toString(combinations[i]));
 		}
 		// print subject population
-		System.out.println(Arrays.toString(data.subjectPopulation.toArray()));
-
+		System.out.println("Printing Subject Population");
+		System.out.println(Arrays.toString(subjectPopulation.toArray()));
 	}
 
 	public void loadCombinations() {
@@ -67,7 +72,8 @@ public class Data {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		Collections.sort(subjectPopulation);
+		//sort
+		Collections.sort(subjectPopulation, Collections.reverseOrder());
 
 	}
 }
