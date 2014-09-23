@@ -2,6 +2,11 @@ package algorithm;
 
 import java.util.Arrays;
 
+/**
+ * Class for distributing subjects in an initial schedule.
+ * 
+ * The Rating Function are for expressing how bad a solution is.
+ */
 public class InitialSchedule {
 	private Data data = new Data();
 
@@ -16,15 +21,25 @@ public class InitialSchedule {
 	public static void main(String[] args) {
 		InitialSchedule initialSchedule = new InitialSchedule();
 		initialSchedule.distributeTutorials();
+		initialSchedule.debug();
+	}
+
+	private void debug() {
+		System.out.println();
 		System.out.println("result");
-		System.out.println(Arrays.deepToString(initialSchedule.subjects));
-		System.out.println(initialSchedule.globalConflict());
+		System.out.println(Arrays.deepToString(subjects));
+
+		System.out.println();
+		System.out.println("conflicts");
+		System.out.println(globalConflict());
+		System.out.println();
+
 		for (int slot = 0; slot < Data.SLOT_COUNT; slot++) {
 			System.out.println("Slot " + slot);
-			for (int subject = 0; subject < initialSchedule.subjects.length; subject++) {
-				for (int tutorialGroup = 1; tutorialGroup < initialSchedule.subjects[subject].length; tutorialGroup++) {
-					for (int tutorial = 0; tutorial < initialSchedule.subjects[subject][tutorialGroup].length; tutorial++) {
-						if (slot == initialSchedule.subjects[subject][tutorialGroup][tutorial]) {
+			for (int subject = 0; subject < subjects.length; subject++) {
+				for (int tutorialGroup = 1; tutorialGroup < subjects[subject].length; tutorialGroup++) {
+					for (int tutorial = 0; tutorial < subjects[subject][tutorialGroup].length; tutorial++) {
+						if (slot == subjects[subject][tutorialGroup][tutorial]) {
 							System.out.println("subject " + subject
 									+ " tutorialGroup " + tutorialGroup
 									+ " tutorial " + tutorial);
@@ -33,6 +48,24 @@ public class InitialSchedule {
 				}
 			}
 		}
+
+		System.out.println();
+		System.out.println("Conflicts by subject");
+		for (int subject1 = 0; subject1 < subjects.length; subject1++) {
+			System.out.println("Subject: " + subject1 + " has conflct with: ");
+			for (int subject2 = 0; subject2 < subjects.length; subject2++) {
+				if (subject1 < subject2) {
+					if (tutorialConflict(subject1, subject2) == 1) {
+						System.out.println("subject " + subject2);
+						System.out.println(Arrays
+								.deepToString(subjects[subject1]));
+						System.out.println(Arrays
+								.deepToString(subjects[subject2]));
+					}
+				}
+			}
+		}
+
 	}
 
 	/**
@@ -92,13 +125,13 @@ public class InitialSchedule {
 		System.out.println("find best slot for subject " + subject
 				+ " tutorialGroup " + tutorialGroup + " tutorial " + tutorial);
 		int minConflictSlot = -1;
-		int minConflictCount = globalConflict();
+		int minConflictCount = Integer.MAX_VALUE;
 
 		// Try each Slot
 		for (int i = 0; i < Data.SLOT_COUNT; i++) {
 
 			subjects[subject][tutorialGroup][tutorial] = i;
-			int conflictCount = globalConflict();
+			int conflictCount = globalConflictRating();
 
 			// if we have less conflicts than before, remember minConflictSlot
 			if (conflictCount <= minConflictCount) {
@@ -124,6 +157,21 @@ public class InitialSchedule {
 	 * 
 	 * @return number of conflicts
 	 */
+	private int globalConflictRating() {
+		int conflictCount = 0;
+		for (int subject1 = 0; subject1 < subjects.length; subject1++) {
+			for (int subject2 = 0; subject2 < subjects.length; subject2++) {
+				if (subject1 < subject2) {
+					// weight conflict by how many peopls want to study this,
+					// from combinationmatrix
+					conflictCount += tutorialConflictRating(subject1, subject2)
+							* data.combinations[subject1][subject2];
+				}
+			}
+		}
+		return conflictCount;
+	}
+
 	private int globalConflict() {
 		int conflictCount = 0;
 		for (int subject1 = 0; subject1 < subjects.length; subject1++) {
@@ -131,14 +179,13 @@ public class InitialSchedule {
 				if (subject1 < subject2) {
 					// weight conflict by how many peopls want to study this,
 					// from combinationmatrix
-					conflictCount += tutorialConflictInt(subject1, subject2)
+					conflictCount += tutorialConflict(subject1, subject2)
 							* data.combinations[subject1][subject2];
 				}
 			}
 		}
 		return conflictCount;
 	}
-	
 
 	/**
 	 * Get if there is a tutorial conflict between two subjects
@@ -147,12 +194,27 @@ public class InitialSchedule {
 	 * @param subject2
 	 * @return 1 if there is a tutorial conflict between two subjects, else 0
 	 */
-	private int tutorialConflictInt(int subject1, int subject2) {
-		return (internalConflict(subject1, 1) + internalConflict(subject2, 1))
-				+ (hasSameSlotInt(subject1, subject2, 1, 1)
-						+ hasSameSlotInt(subject1, subject2, 1, 2)
-						+ hasSameSlotInt(subject1, subject2, 2, 1) + hasSameSlotInt(
+	private int tutorialConflictRating(int subject1, int subject2) {
+		return (internalConflictRating(subject1) + internalConflictRating(subject2))
+				+ (hasSameSlotRating(subject1, subject2, 1, 1)
+						+ hasSameSlotRating(subject1, subject2, 1, 2)
+						+ hasSameSlotRating(subject1, subject2, 2, 1) + hasSameSlotRating(
 							subject1, subject2, 2, 2));
+	}
+
+	private int tutorialConflict(int subject1, int subject2) {
+		return (((hasSameSlot(subject1, subject2, 1, 1)
+				|| internalConflict(subject1, 1) || internalConflict(subject2,
+					1)))
+				&& (hasSameSlot(subject1, subject2, 1, 2)
+						|| internalConflict(subject1, 1) || internalConflict(
+							subject2, 2))
+				&& (hasSameSlot(subject1, subject2, 2, 1)
+						|| internalConflict(subject1, 2) || internalConflict(
+							subject2, 1))
+				&& (hasSameSlot(subject1, subject2, 2, 2)
+						|| internalConflict(subject1, 2) || internalConflict(
+							subject2, 2)) ? 1 : 0);
 	}
 
 	/**
@@ -164,7 +226,7 @@ public class InitialSchedule {
 	 * @param tutorial2
 	 * @return
 	 */
-	private int hasSameSlotInt(int subject1, int subject2, int tutorial1,
+	private int hasSameSlotRating(int subject1, int subject2, int tutorial1,
 			int tutorial2) {
 		// for each of the 3 slot test if there use the same timeSlot
 
@@ -179,30 +241,63 @@ public class InitialSchedule {
 		return result;
 	}
 
-	/*
-	 * Check conflicts ionside one subject
-	 * 
-	 */
-	private int internalConflict(int subject1, int tutorial1) {
-		int result = 0;
+	private boolean hasSameSlot(int subject1, int subject2, int tutorial1,
+			int tutorial2) {
 		// for each of the 3 slot test if there use the same timeSlot
+
 		for (int i = 0; i < subjects[subject1][tutorial1].length; i++) {
 			for (int j = 0; j < subjects[subject1][tutorial1].length; j++) {
-				//add conflict inside tutorialGroup 1
+				if ((subjects[subject1][tutorial1][i] == subjects[subject2][tutorial2][j])) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * * Check conflicts ionside one subject
+	 * 
+	 * @param subject1
+	 * @return
+	 */
+	private int internalConflictRating(int subject1) {
+		int result = 0;
+		// for each of the 3 slot test if there use the same timeSlot
+		for (int i = 0; i < subjects[subject1][1].length; i++) {
+			for (int j = 0; j < subjects[subject1][1].length; j++) {
+				// add conflict inside tutorialGroup 1
 				if ((i != j)
 						&& (subjects[subject1][1][i] == subjects[subject1][1][j])) {
 					result += 1;
 				}
-				//add conflict inside tutorialGroup 2
+				// add conflict inside tutorialGroup 2
 				if ((i != j)
 						&& (subjects[subject1][2][i] == subjects[subject1][2][j])) {
 					result += 1;
 				}
-				//add conflict between tutorialGroups			
+				// add conflict between tutorialGroups
 				if ((subjects[subject1][1][i] == subjects[subject1][2][j])) {
 					result += 1;
 				}
+			}
+		}
+		return result;
+	}
 
+	/*
+	 * Check conflicts ionside one subject
+	 */
+	private boolean internalConflict(int subject1, int tutorial1) {
+		boolean result = false;
+		// for each of the 3 slot test if there use the same timeSlot
+		for (int i = 0; i < subjects[subject1][tutorial1].length; i++) {
+			for (int j = 0; j < subjects[subject1][tutorial1].length; j++) {
+				// add conflict inside tutorialGroup 1
+				if ((i != j)
+						&& (subjects[subject1][tutorial1][i] == subjects[subject1][tutorial1][j])) {
+					result = true;
+				}
 			}
 		}
 		return result;
