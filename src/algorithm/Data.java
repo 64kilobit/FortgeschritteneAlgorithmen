@@ -17,15 +17,27 @@ public class Data {
 	public static final int SUBJECT_COUNT = 19;
 	public static final int SLOT_COUNT = 25;
 	public static final String COMBINATIONS_FILE_NAME = "data/combinations.csv";
+	public static final String TAKEN_SLOTS_FILE_NAME = "data/takenSlots.csv";
+	public static final String SUBJECTS_FILE_NAME = "data/subjects.csv";
 
 	public List<Subject> subjectPopulation = new ArrayList<Subject>();
 	public int[][] combinations;
+
+	// subjectId defines the subject
+	// structure tutorialGroupId = 0 are lectures, tutorialGroupId = 1 are
+	// tutorial group 1,
+	// tutorialGroupId = 2 are tutorial group 2
+	// tutorial = 0 is tutorialSlot 1, ..., tutorial = 2 is tutorialSlot 3
+	// subjects[subject][tutorialGroup][tutorial]
+	public int[][][] subjects = new int[Data.SUBJECT_COUNT][3][3];
 
 	// for tesing
 	public static void main(String[] args) {
 		Data data = new Data();
 		data.loadCombinations();
 		data.debug();
+		data.loadTakenSlots();
+		System.out.println(Arrays.deepToString(data.subjects));
 	}
 
 	public void debug() {
@@ -72,8 +84,63 @@ public class Data {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		//sort
+		// sort
 		Collections.sort(subjectPopulation, Collections.reverseOrder());
+
+	}
+
+	public void loadTakenSlots() {
+		// init arrays
+		combinations = new int[SUBJECT_COUNT][SUBJECT_COUNT];
+
+		try {
+			// load csv from file
+			List<CSVRecord> subjectRecords = CSVParser.parse(
+					new File(SUBJECTS_FILE_NAME), Charset.defaultCharset(),
+					CSVFormat.EXCEL).getRecords();
+			List<CSVRecord> takenSlotsRecords = CSVParser.parse(
+					new File(TAKEN_SLOTS_FILE_NAME), Charset.defaultCharset(),
+					CSVFormat.EXCEL).getRecords();
+
+			// read csv into array
+			for (int subjectsLine = 0; subjectsLine < subjectRecords.size(); subjectsLine++) {
+				for (int subject = 0; subject < SUBJECT_COUNT; subject++) {
+					String subjectName = subjectRecords.get(subjectsLine)
+							.get(subject).trim();
+					System.out.println(subjectName);
+
+					int slotCounter = 0;
+					for (int slot = 0; slot < SLOT_COUNT; slot++) {
+
+						for (int slotSubject = 0; slotSubject < takenSlotsRecords
+								.get(slot * 3 + 1).size(); slotSubject++) {
+							String slotSubjectName = takenSlotsRecords
+									.get(slot * 3 + 1).get(slotSubject).trim();
+
+							System.out.println("slot " + slot
+									+ "  slot subject " + slotSubjectName);
+							if (takenSlotsRecords.get(slot * 3 + 1)
+									.get(slotSubject).trim()
+									.equals(subjectName)) {
+								System.out.println(subjectName + " found in "
+										+ slot+" time: "+slotCounter);
+								//!!!!!! GRI is 4 times in the takenSlot.csv, every other element is in there 3 times
+								if(slotCounter<3){
+									subjects[subject][0][slotCounter] = slot;									
+								}
+								slotCounter++;
+							}
+
+						}
+					}
+
+				}
+				System.out.println(subjectRecords.get(subjectsLine));
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 	}
 }
