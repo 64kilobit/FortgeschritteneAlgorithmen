@@ -126,18 +126,19 @@ public class InitialSchedule {
 	 */
 	private int globalConflict() {
 		int conflictCount = 0;
-		for (int fach1 = 0; fach1 < subjects.length; fach1++) {
-			for (int fach2 = 0; fach2 < subjects.length; fach2++) {
-				if (fach1 < fach2) {
-					// weight conflict by how many peopls want to stufy this,
+		for (int subject1 = 0; subject1 < subjects.length; subject1++) {
+			for (int subject2 = 0; subject2 < subjects.length; subject2++) {
+				if (subject1 < subject2) {
+					// weight conflict by how many peopls want to study this,
 					// from combinationmatrix
-					conflictCount += tutorialConflict(fach1, fach2)
-							* data.combinations[fach1][fach2];
+					conflictCount += tutorialConflictInt(subject1, subject2)
+							* data.combinations[subject1][subject2];
 				}
 			}
 		}
 		return conflictCount;
 	}
+	
 
 	/**
 	 * Get if there is a tutorial conflict between two subjects
@@ -146,14 +147,12 @@ public class InitialSchedule {
 	 * @param subject2
 	 * @return 1 if there is a tutorial conflict between two subjects, else 0
 	 */
-	private int tutorialConflict(int subject1, int subject2) {
-		return (internalConflict(subject1, 1) + internalConflict(subject1, 2)
-				+ internalConflict(subject2, 1) + internalConflict(subject2, 2))
-				+ (hasSameSlot(subject1, subject2, 1, 1)
-						+ hasSameSlot(subject1, subject2, 1, 2)
-						+ hasSameSlot(subject1, subject2, 2, 1) + hasSameSlot(
+	private int tutorialConflictInt(int subject1, int subject2) {
+		return (internalConflict(subject1, 1) + internalConflict(subject2, 1))
+				+ (hasSameSlotInt(subject1, subject2, 1, 1)
+						+ hasSameSlotInt(subject1, subject2, 1, 2)
+						+ hasSameSlotInt(subject1, subject2, 2, 1) + hasSameSlotInt(
 							subject1, subject2, 2, 2));
-
 	}
 
 	/**
@@ -165,7 +164,7 @@ public class InitialSchedule {
 	 * @param tutorial2
 	 * @return
 	 */
-	private int hasSameSlot(int subject1, int subject2, int tutorial1,
+	private int hasSameSlotInt(int subject1, int subject2, int tutorial1,
 			int tutorial2) {
 		// for each of the 3 slot test if there use the same timeSlot
 
@@ -180,17 +179,33 @@ public class InitialSchedule {
 		return result;
 	}
 
+	/*
+	 * Check conflicts ionside one subject
+	 * 
+	 */
 	private int internalConflict(int subject1, int tutorial1) {
 		int result = 0;
 		// for each of the 3 slot test if there use the same timeSlot
 		for (int i = 0; i < subjects[subject1][tutorial1].length; i++) {
 			for (int j = 0; j < subjects[subject1][tutorial1].length; j++) {
+				//add conflict inside tutorialGroup 1
 				if ((i != j)
-						&& (subjects[subject1][tutorial1][i] == subjects[subject1][tutorial1][j])) {
+						&& (subjects[subject1][1][i] == subjects[subject1][1][j])) {
 					result += 1;
 				}
+				//add conflict inside tutorialGroup 2
+				if ((i != j)
+						&& (subjects[subject1][2][i] == subjects[subject1][2][j])) {
+					result += 1;
+				}
+				//add conflict between tutorialGroups			
+				if ((subjects[subject1][1][i] == subjects[subject1][2][j])) {
+					result += 1;
+				}
+
 			}
 		}
 		return result;
 	}
+
 }
