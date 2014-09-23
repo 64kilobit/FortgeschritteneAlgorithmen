@@ -10,13 +10,6 @@ import java.util.Arrays;
 public class InitialSchedule {
 	private Data data = new Data();
 
-	// subjectId defines the subject
-	// structure tutorialGroupId = 0 are lectures, tutorialGroupId = 1 are
-	// tutorial group 1,
-	// tutorialGroupId = 2 are tutorial group 2
-	// tutorial = 0 is tutorialSlot 1, ..., tutorial = 2 is tutorialSlot 3
-	// subjects[subject][tutorialGroup][tutorial]
-
 	public static void main(String[] args) {
 		InitialSchedule initialSchedule = new InitialSchedule();
 		initialSchedule.distributeTutorials();
@@ -33,10 +26,11 @@ public class InitialSchedule {
 		System.out.println(globalConflict());
 		System.out.println();
 
+		// for all slots print the tutotrials using this slot
 		for (int slot = 0; slot < Data.SLOT_COUNT; slot++) {
 			System.out.println("Slot " + slot);
 			for (int subject = 0; subject < data.subjects.length; subject++) {
-				for (int tutorialGroup = 1; tutorialGroup < data.subjects[subject].length; tutorialGroup++) {
+				for (int tutorialGroup = 0; tutorialGroup < data.subjects[subject].length; tutorialGroup++) {
 					for (int tutorial = 0; tutorial < data.subjects[subject][tutorialGroup].length; tutorial++) {
 						if (slot == data.subjects[subject][tutorialGroup][tutorial]) {
 							System.out.println("subject " + subject
@@ -48,6 +42,7 @@ public class InitialSchedule {
 			}
 		}
 
+		// For each subject print other subjects we have conflict with
 		System.out.println();
 		System.out.println("Conflicts by subject");
 		for (int subject1 = 0; subject1 < data.subjects.length; subject1++) {
@@ -85,6 +80,7 @@ public class InitialSchedule {
 		System.out.println("distributeTutorials started");
 
 		data.loadCombinations();
+		data.loadTakenSlots();
 
 		// for each subject distribute tutorial, start with most populated, it
 		// is sorted
@@ -195,23 +191,45 @@ public class InitialSchedule {
 	 */
 	private int tutorialConflictRating(int subject1, int subject2) {
 		return (internalConflictRating(subject1) + internalConflictRating(subject2))
-				+ (hasSameSlotRating(subject1, subject2, 1, 1)
-						+ hasSameSlotRating(subject1, subject2, 1, 2)
-						+ hasSameSlotRating(subject1, subject2, 2, 1) + hasSameSlotRating(
-							subject1, subject2, 2, 2));
+				+ Math.min(Math.min(hasSameSlotRating(subject1, subject2, 1, 1)
+						+ hasSameSlotRating(subject1, subject2, 1, 0)
+						+ hasSameSlotRating(subject1, subject2, 0, 1),
+						hasSameSlotRating(subject1, subject2, 1, 2)
+								+ hasSameSlotRating(subject1, subject2, 1, 0)
+								+ hasSameSlotRating(subject1, subject2, 0, 2)),
+						Math.min(
+								+hasSameSlotRating(subject1, subject2, 2, 1)
+										+ hasSameSlotRating(subject1, subject2,
+												2, 0)
+										+ hasSameSlotRating(subject1, subject2,
+												0, 1),
+								hasSameSlotRating(subject1, subject2, 2, 2)
+										+ hasSameSlotRating(subject1, subject2,
+												2, 0)
+										+ hasSameSlotRating(subject1, subject2,
+												0, 2)));
+
 	}
 
 	private int tutorialConflict(int subject1, int subject2) {
 		return (((hasSameSlot(subject1, subject2, 1, 1)
+				|| hasSameSlot(subject1, subject2, 0, 1)
+				|| hasSameSlot(subject1, subject2, 1, 0)
 				|| internalConflict(subject1, 1) || internalConflict(subject2,
 					1)))
 				&& (hasSameSlot(subject1, subject2, 1, 2)
+						|| hasSameSlot(subject1, subject2, 0, 2)
+						|| hasSameSlot(subject1, subject2, 1, 0)
 						|| internalConflict(subject1, 1) || internalConflict(
 							subject2, 2))
 				&& (hasSameSlot(subject1, subject2, 2, 1)
+						|| hasSameSlot(subject1, subject2, 2, 0)
+						|| hasSameSlot(subject1, subject2, 0, 1)
 						|| internalConflict(subject1, 2) || internalConflict(
 							subject2, 1))
 				&& (hasSameSlot(subject1, subject2, 2, 2)
+						|| hasSameSlot(subject1, subject2, 0, 2)
+						|| hasSameSlot(subject1, subject2, 2, 0)
 						|| internalConflict(subject1, 2) || internalConflict(
 							subject2, 2)) ? 1 : 0);
 	}
@@ -255,7 +273,7 @@ public class InitialSchedule {
 	}
 
 	/**
-	 * * Check conflicts ionside one subject
+	 * * Check conflicts inside one subject
 	 * 
 	 * @param subject1
 	 * @return
@@ -263,21 +281,16 @@ public class InitialSchedule {
 	private int internalConflictRating(int subject1) {
 		int result = 0;
 		// for each of the 3 slot test if there use the same timeSlot
-		for (int i = 0; i < data.subjects[subject1][1].length; i++) {
-			for (int j = 0; j < data.subjects[subject1][1].length; j++) {
-				// add conflict inside tutorialGroup 1
-				if ((i != j)
-						&& (data.subjects[subject1][1][i] == data.subjects[subject1][1][j])) {
-					result += 1;
-				}
-				// add conflict inside tutorialGroup 2
-				if ((i != j)
-						&& (data.subjects[subject1][2][i] == data.subjects[subject1][2][j])) {
-					result += 1;
-				}
-				// add conflict between tutorialGroups
-				if ((data.subjects[subject1][1][i] == data.subjects[subject1][2][j])) {
-					result += 1;
+		for (int tutorialGroup1 = 0; tutorialGroup1 < data.subjects[subject1].length; tutorialGroup1++) {
+			for (int tutorialGroup2 = 0; tutorialGroup2 < data.subjects[subject1].length; tutorialGroup2++) {
+				for (int i = 0; i < data.subjects[subject1][tutorialGroup1].length; i++) {
+					for (int j = 0; j < data.subjects[subject1][tutorialGroup1].length; j++) {
+						// add conflict inside tutorialGroup 1
+						if (((i != j) || (tutorialGroup1 != tutorialGroup2))
+								&& (data.subjects[subject1][tutorialGroup1][i] == data.subjects[subject1][tutorialGroup2][j])) {
+							result += 1;
+						}
+					}
 				}
 			}
 		}
@@ -285,16 +298,16 @@ public class InitialSchedule {
 	}
 
 	/*
-	 * Check conflicts ionside one subject
+	 * Check conflicts inside one subject
 	 */
-	private boolean internalConflict(int subject1, int tutorial1) {
+	private boolean internalConflict(int subject1, int tutorialGroup1) {
 		boolean result = false;
 		// for each of the 3 slot test if there use the same timeSlot
-		for (int i = 0; i < data.subjects[subject1][tutorial1].length; i++) {
-			for (int j = 0; j < data.subjects[subject1][tutorial1].length; j++) {
+		for (int i = 0; i < data.subjects[subject1][tutorialGroup1].length; i++) {
+			for (int j = 0; j < data.subjects[subject1][tutorialGroup1].length; j++) {
 				// add conflict inside tutorialGroup 1
 				if ((i != j)
-						&& (data.subjects[subject1][tutorial1][i] == data.subjects[subject1][tutorial1][j])) {
+						&& (data.subjects[subject1][tutorialGroup1][i] == data.subjects[subject1][tutorialGroup1][j])) {
 					result = true;
 				}
 			}

@@ -90,9 +90,6 @@ public class Data {
 	}
 
 	public void loadTakenSlots() {
-		// init arrays
-		combinations = new int[SUBJECT_COUNT][SUBJECT_COUNT];
-
 		try {
 			// load csv from file
 			List<CSVRecord> subjectRecords = CSVParser.parse(
@@ -102,14 +99,16 @@ public class Data {
 					new File(TAKEN_SLOTS_FILE_NAME), Charset.defaultCharset(),
 					CSVFormat.EXCEL).getRecords();
 
-			// read csv into array
+			// read subject from subjects.csv, all are in one row
 			for (int subjectsLine = 0; subjectsLine < subjectRecords.size(); subjectsLine++) {
+				// for each subject, so we can lookup the slot numbers
 				for (int subject = 0; subject < SUBJECT_COUNT; subject++) {
 					String subjectName = subjectRecords.get(subjectsLine)
 							.get(subject).trim();
 					System.out.println(subjectName);
 
 					int slotCounter = 0;
+					// traverse slots from takenSlots.csv
 					for (int slot = 0; slot < SLOT_COUNT; slot++) {
 
 						for (int slotSubject = 0; slotSubject < takenSlotsRecords
@@ -117,16 +116,15 @@ public class Data {
 							String slotSubjectName = takenSlotsRecords
 									.get(slot * 3 + 1).get(slotSubject).trim();
 
-							System.out.println("slot " + slot
-									+ "  slot subject " + slotSubjectName);
-							if (takenSlotsRecords.get(slot * 3 + 1)
-									.get(slotSubject).trim()
-									.equals(subjectName)) {
+							// our current subject matches the field in the
+							// taken slots, so we need this slot
+							if (slotSubjectName.equals(subjectName)) {
 								System.out.println(subjectName + " found in "
-										+ slot+" time: "+slotCounter);
-								//!!!!!! GRI is 4 times in the takenSlot.csv, every other element is in there 3 times
-								if(slotCounter<3){
-									subjects[subject][0][slotCounter] = slot;									
+										+ slot + " time: " + slotCounter);
+								// !!!!!! GRI is 4 times in the takenSlot.csv,
+								// every other element is in there 3 times
+								if (slotCounter < 3) {
+									subjects[subject][0][slotCounter] = slot;
 								}
 								slotCounter++;
 							}
