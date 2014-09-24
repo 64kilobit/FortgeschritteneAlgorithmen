@@ -12,9 +12,12 @@ public class InitialSchedule {
 	private Data data = new Data();
 
 	public static void main(String[] args) {
-		InitialSchedule initialSchedule = new InitialSchedule();
-		initialSchedule.distributeTutorials();
-		initialSchedule.debug();
+		new InitialSchedule();
+	}
+
+	public InitialSchedule() {
+		distributeTutorials();
+		debug();
 	}
 
 	private void debug() {
@@ -78,20 +81,8 @@ public class InitialSchedule {
 
 	}
 
-	/**
-	 * Init Array with -1
-	 */
-	private void init() {
-		for (int[][] subject : data.subjects) {
-			for (int[] übung : subject) {
-				Arrays.fill(übung, -1);
-			}
-		}
-	}
-
 	/** distribute Tutorials */
 	private void distributeTutorials() {
-		init();
 		// System.out.println(Arrays.deepToString(subjects));
 		System.out.println("distributeTutorials started");
 
@@ -100,16 +91,17 @@ public class InitialSchedule {
 
 		// for each subject distribute tutorial, start with most populated, it
 		// is sorted
-		while (data.subjectPopulation.size() > 0) {
+		while (data.subjectPopulationSorted.size() > 0) {
 			// System.out.println(data.subjectPopulation.size());
 
 			// extract most populated subject
-			int maxFachId = data.subjectPopulation.get(0).id;
+			int maxFachId = data.subjectPopulationSorted.get(0).id;
 			System.out.println();
 			System.out.println("most populated subject is now:" + maxFachId
-					+ " with: " + data.subjectPopulation.get(0).population
+					+ " with: "
+					+ data.subjectPopulationSorted.get(0).population
 					+ " students");
-			data.subjectPopulation.remove(0);
+			data.subjectPopulationSorted.remove(0);
 
 			for (int i = 0; i < data.subjects[maxFachId][1].length; i++) {
 

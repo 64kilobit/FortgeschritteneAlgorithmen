@@ -20,9 +20,13 @@ public class Data {
 	public static final String TAKEN_SLOTS_FILE_NAME = "data/takenSlots.csv";
 	public static final String SUBJECTS_FILE_NAME = "data/subjects.csv";
 
-	public List<Subject> subjectPopulation = new ArrayList<Subject>();
+	// for finding most populated subject
+	public List<Subject> subjectPopulationSorted = new ArrayList<Subject>();
+	// for lookinh up population
 	public List<Subject> subjectPopulationUnsorted = new ArrayList<Subject>();
+	// combination matrix
 	public int[][] combinations;
+	// for looking up subject names
 	public String[] subjectNames = new String[SUBJECT_COUNT];
 
 	// subjectId defines the subject
@@ -35,22 +39,43 @@ public class Data {
 
 	// for tesing
 	public static void main(String[] args) {
-		Data data = new Data();
-		data.loadCombinations();
-		data.debug();
-		data.loadTakenSlots();
-		System.out.println(Arrays.deepToString(data.subjects));
+		new Data();
+	}
+
+	public Data() {
+		initSubjects();
+		loadCombinations();
+		loadTakenSlots();
+		debug();
+	}
+
+	/**
+	 * Init Array with -1
+	 */
+	private void initSubjects() {
+		for (int[][] subject : subjects) {
+			for (int[] tutorialGroup : subject) {
+				Arrays.fill(tutorialGroup, -1);
+			}
+		}
 	}
 
 	public void debug() {
 		// print combination matrix
+		System.out.println();
 		System.out.println("Printing Combination Matrix");
 		for (int i = 0; i < combinations.length; i++) {
 			System.out.println(Arrays.toString(combinations[i]));
 		}
 		// print subject population
+		System.out.println();
 		System.out.println("Printing Subject Population");
-		System.out.println(Arrays.toString(subjectPopulation.toArray()));
+		System.out.println(Arrays.toString(subjectPopulationSorted.toArray()));
+
+		// subjects
+		System.out.println();
+		System.out.println("subjects");
+		System.out.println(Arrays.deepToString(subjects));
 	}
 
 	public void loadCombinations() {
@@ -69,7 +94,7 @@ public class Data {
 				// if we are in last line, read sums to array
 				if (i == SUBJECT_COUNT) {
 					for (int j = 0; j < csvRecord.size(); j++) {
-						subjectPopulation.add(new Subject(j, Integer
+						subjectPopulationSorted.add(new Subject(j, Integer
 								.parseInt(csvRecord.get(j).trim())));
 					}
 				} else {
@@ -86,12 +111,15 @@ public class Data {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		subjectPopulationUnsorted.addAll(subjectPopulation);
+		subjectPopulationUnsorted.addAll(subjectPopulationSorted);
 		// sort
-		Collections.sort(subjectPopulation, Collections.reverseOrder());
+		Collections.sort(subjectPopulationSorted, Collections.reverseOrder());
 
 	}
 
+	/**
+	 * load taken slots of the lectures
+	 */
 	public void loadTakenSlots() {
 		try {
 			// load csv from file
@@ -136,7 +164,6 @@ public class Data {
 					}
 
 				}
-				System.out.println(subjectRecords.get(subjectsLine));
 			}
 
 		} catch (IOException e) {
