@@ -21,7 +21,9 @@ public class Data {
 	public static final String SUBJECTS_FILE_NAME = "data/subjects.csv";
 
 	public List<Subject> subjectPopulation = new ArrayList<Subject>();
+	public List<Subject> subjectPopulationUnsorted = new ArrayList<Subject>();
 	public int[][] combinations;
+	public String[] subjectNames = new String[SUBJECT_COUNT];
 
 	// subjectId defines the subject
 	// structure tutorialGroupId = 0 are lectures, tutorialGroupId = 1 are
@@ -84,6 +86,7 @@ public class Data {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		subjectPopulationUnsorted.addAll(subjectPopulation);
 		// sort
 		Collections.sort(subjectPopulation, Collections.reverseOrder());
 
@@ -106,7 +109,7 @@ public class Data {
 					String subjectName = subjectRecords.get(subjectsLine)
 							.get(subject).trim();
 					System.out.println(subjectName);
-
+					subjectNames[subject] = subjectName;
 					int slotCounter = 0;
 					// traverse slots from takenSlots.csv
 					for (int slot = 0; slot < SLOT_COUNT; slot++) {

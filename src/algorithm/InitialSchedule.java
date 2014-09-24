@@ -8,6 +8,7 @@ import java.util.Arrays;
  * The Rating Function are for expressing how bad a solution is.
  */
 public class InitialSchedule {
+
 	private Data data = new Data();
 
 	public static void main(String[] args) {
@@ -28,12 +29,14 @@ public class InitialSchedule {
 
 		// for all slots print the tutotrials using this slot
 		for (int slot = 0; slot < Data.SLOT_COUNT; slot++) {
+			System.out.println();
 			System.out.println("Slot " + slot);
 			for (int subject = 0; subject < data.subjects.length; subject++) {
 				for (int tutorialGroup = 0; tutorialGroup < data.subjects[subject].length; tutorialGroup++) {
 					for (int tutorial = 0; tutorial < data.subjects[subject][tutorialGroup].length; tutorial++) {
 						if (slot == data.subjects[subject][tutorialGroup][tutorial]) {
-							System.out.println("subject " + subject
+							System.out.println("subject " + subject + " "
+									+ data.subjectNames[subject]
 									+ " tutorialGroup " + tutorialGroup
 									+ " tutorial " + tutorial);
 						}
@@ -46,15 +49,28 @@ public class InitialSchedule {
 		System.out.println();
 		System.out.println("Conflicts by subject");
 		for (int subject1 = 0; subject1 < data.subjects.length; subject1++) {
-			System.out.println("Subject: " + subject1 + " has conflct with: ");
+			System.out.println();
+			System.out.println("Subject: " + subject1 + " "
+					+ data.subjectNames[subject1] + " ("
+					+ data.subjectPopulationUnsorted.get(subject1).population
+					+ " students) has conflict with:");
 			for (int subject2 = 0; subject2 < data.subjects.length; subject2++) {
 				if (subject1 < subject2) {
 					if (tutorialConflict(subject1, subject2) == 1) {
-						System.out.println("subject " + subject2);
-						System.out.println(Arrays
-								.deepToString(data.subjects[subject1]));
-						System.out.println(Arrays
-								.deepToString(data.subjects[subject2]));
+						System.out
+								.println("> subject "
+										+ subject2
+										+ " "
+										+ data.subjectNames[subject2]
+										+ " ("
+										+ data.subjectPopulationUnsorted
+												.get(subject1).population
+										+ " students) students affected: "
+										+ data.combinations[subject1][subject2]);
+						System.out.println("> "
+								+ Arrays.deepToString(data.subjects[subject1]));
+						System.out.println("> "
+								+ Arrays.deepToString(data.subjects[subject2]));
 					}
 				}
 			}
@@ -95,10 +111,6 @@ public class InitialSchedule {
 					+ " students");
 			data.subjectPopulation.remove(0);
 
-			// subjects[maxFachId][1][0] = findBestSlot(maxFachId, 1, 0);
-			// subjects[maxFachId][1][1] = findBestSlot(maxFachId, 1, 1);
-			// subjects[maxFachId][2][0] = findBestSlot(maxFachId, 2, 0);
-			// subjects[maxFachId][2][1] = findBestSlot(maxFachId, 2, 1);
 			for (int i = 0; i < data.subjects[maxFachId][1].length; i++) {
 
 				// distribute both tutorials
@@ -117,12 +129,10 @@ public class InitialSchedule {
 	 * @return the best time slot for this tutorial
 	 */
 	private int findBestSlot(int subject, int tutorialGroup, int tutorial) {
-		System.out.println("find best slot for subject " + subject
-				+ " tutorialGroup " + tutorialGroup + " tutorial " + tutorial);
 		int minConflictSlot = -1;
 		int minConflictCount = Integer.MAX_VALUE;
 
-		// Try each Slot
+		// try each Slot
 		for (int i = 0; i < Data.SLOT_COUNT; i++) {
 
 			data.subjects[subject][tutorialGroup][tutorial] = i;
@@ -130,7 +140,6 @@ public class InitialSchedule {
 
 			// if we have less conflicts than before, remember minConflictSlot
 			if (conflictCount <= minConflictCount) {
-				// System.out.println("b");
 				minConflictSlot = i;
 				minConflictCount = conflictCount;
 			}
