@@ -9,7 +9,7 @@ import java.util.Arrays;
  */
 public class InitialSchedule {
 
-	private Data data = new Data();
+	public Data data = new Data();
 
 	public static void main(String[] args) {
 		new InitialSchedule();
@@ -20,7 +20,7 @@ public class InitialSchedule {
 		debug();
 	}
 
-	private void debug() {
+	public void debug() {
 		System.out.println();
 		System.out.println("result");
 		System.out.println(Arrays.deepToString(data.subjects));
@@ -30,23 +30,23 @@ public class InitialSchedule {
 		System.out.println(globalConflict());
 		System.out.println();
 
-		// for all slots print the tutotrials using this slot
-		for (int slot = 0; slot < Data.SLOT_COUNT; slot++) {
-			System.out.println();
-			System.out.println("Slot " + slot);
-			for (int subject = 0; subject < data.subjects.length; subject++) {
-				for (int tutorialGroup = 0; tutorialGroup < data.subjects[subject].length; tutorialGroup++) {
-					for (int tutorial = 0; tutorial < data.subjects[subject][tutorialGroup].length; tutorial++) {
-						if (slot == data.subjects[subject][tutorialGroup][tutorial]) {
-							System.out.println("subject " + subject + " "
-									+ data.subjectNames[subject]
-									+ " tutorialGroup " + tutorialGroup
-									+ " tutorial " + tutorial);
-						}
-					}
-				}
-			}
-		}
+//		// for all slots print the tutotrials using this slot
+//		for (int slot = 0; slot < Data.SLOT_COUNT; slot++) {
+//			System.out.println();
+//			System.out.println("Slot " + slot);
+//			for (int subject = 0; subject < data.subjects.length; subject++) {
+//				for (int tutorialGroup = 0; tutorialGroup < data.subjects[subject].length; tutorialGroup++) {
+//					for (int tutorial = 0; tutorial < data.subjects[subject][tutorialGroup].length; tutorial++) {
+//						if (slot == data.subjects[subject][tutorialGroup][tutorial]) {
+//							System.out.println("subject " + subject + " "
+//									+ data.subjectNames[subject]
+//									+ " tutorialGroup " + tutorialGroup
+//									+ " tutorial " + tutorial);
+//						}
+//					}
+//				}
+//			}
+//		}
 
 		// For each subject print other subjects we have conflict with
 		System.out.println();
@@ -78,6 +78,11 @@ public class InitialSchedule {
 				}
 			}
 		}
+		
+		System.out.println();
+		System.out.println("conflicts");
+		System.out.println(globalConflict());
+		System.out.println();
 
 	}
 
@@ -153,7 +158,7 @@ public class InitialSchedule {
 	 * 
 	 * @return number of conflicts
 	 */
-	private int globalConflictRating() {
+	public int globalConflictRating() {
 		int conflictCount = 0;
 		for (int subject1 = 0; subject1 < data.subjects.length; subject1++) {
 			for (int subject2 = 0; subject2 < data.subjects.length; subject2++) {
@@ -168,7 +173,7 @@ public class InitialSchedule {
 		return conflictCount;
 	}
 
-	private int globalConflict() {
+	public int globalConflict() {
 		int conflictCount = 0;
 		for (int subject1 = 0; subject1 < data.subjects.length; subject1++) {
 			for (int subject2 = 0; subject2 < data.subjects.length; subject2++) {
