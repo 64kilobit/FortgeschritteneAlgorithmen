@@ -71,6 +71,7 @@ public class SimulatedAnnealing {
 				// permanently write operation
 				selected.write();
 			}
+
 			p -= deltaP;
 		}
 	}
