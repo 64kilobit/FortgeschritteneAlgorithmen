@@ -29,9 +29,9 @@ public class InitialSchedule {
 		for (int slot = 0; slot < Data.SLOT_COUNT; slot++) {
 			System.out.println();
 			System.out.println("Slot " + slot);
-			for (int subject = 0; subject < data.subjects.length; subject++) {
-				for (int tutorialGroup = 0; tutorialGroup < data.subjects[subject].length; tutorialGroup++) {
-					for (int tutorial = 0; tutorial < data.subjects[subject][tutorialGroup].length; tutorial++) {
+			for (int subject = 0; subject < Data.SUBJECT_COUNT; subject++) {
+				for (int tutorialGroup = 0; tutorialGroup < Data.TUTORIAL_GROUP_COUNT; tutorialGroup++) {
+					for (int tutorial = 0; tutorial < Data.TUTORIAL_COUNT; tutorial++) {
 						if (slot == data.subjects[subject][tutorialGroup][tutorial]) {
 							System.out.println("subject " + subject + " "
 									+ data.subjectNames[subject]
@@ -46,13 +46,13 @@ public class InitialSchedule {
 		// For each subject print other subjects we have conflict with
 		System.out.println();
 		System.out.println("Conflicts by subject");
-		for (int subject1 = 0; subject1 < data.subjects.length; subject1++) {
+		for (int subject1 = 0; subject1 < Data.SUBJECT_COUNT; subject1++) {
 			System.out.println();
 			System.out.println("Subject: " + subject1 + " "
 					+ data.subjectNames[subject1] + " ("
 					+ data.subjectPopulationUnsorted.get(subject1).population
 					+ " students) has conflict with:");
-			for (int subject2 = 0; subject2 < data.subjects.length; subject2++) {
+			for (int subject2 = 0; subject2 < Data.SUBJECT_COUNT; subject2++) {
 				if (subject1 < subject2) {
 					if (tutorialConflict(subject1, subject2) == 1) {
 						System.out
@@ -81,19 +81,16 @@ public class InitialSchedule {
 
 	}
 
-	/** distribute Tutorials */
+	/**
+	 * Distribute Tutorials, complexity O(SUBJECT_COUNT * Time(findBestSlot))
+	 * 
+	 * */
 	private void distributeTutorials() {
-		// System.out.println(Arrays.deepToString(subjects));
 		System.out.println("distributeTutorials started");
 
-		System.out.println(Arrays.deepToString(data.subjectPopulationSorted
-				.toArray()));
-		System.out.println(Arrays.deepToString(data.subjectPopulationUnsorted
-				.toArray()));
 		// for each subject distribute tutorial, start with most populated, it
 		// is sorted
 		while (data.subjectPopulationSorted.size() > 0) {
-			// System.out.println(data.subjectPopulation.size());
 
 			// extract most populated subject
 			int maxFachId = data.subjectPopulationSorted.get(0).id;
@@ -104,7 +101,7 @@ public class InitialSchedule {
 					+ " students");
 			data.subjectPopulationSorted.remove(0);
 
-			for (int i = 0; i < data.subjects[maxFachId][1].length; i++) {
+			for (int i = 0; i < Data.TUTORIAL_COUNT; i++) {
 
 				// distribute both tutorials
 				data.subjects[maxFachId][1][i] = findBestSlot(maxFachId, 1, i);
@@ -114,7 +111,8 @@ public class InitialSchedule {
 	}
 
 	/**
-	 * Find the best slot for a specific tutorial
+	 * Find the best slot for a specific tutorial, complexity O(SLOT_COUNT *
+	 * Time(globalConflictRating))
 	 * 
 	 * @param subject
 	 * @param tutorialGroup
@@ -150,14 +148,15 @@ public class InitialSchedule {
 	}
 
 	/**
-	 * Compute the number of students affected by conflicts
+	 * Compute the number of students affected by conflicts, rating, complexity
+	 * O(SUBJECT_COUNT^2 * Time(tutorialConflictRating))
 	 * 
 	 * @return number of conflicts
 	 */
 	public int globalConflictRating() {
 		int conflictCount = 0;
-		for (int subject1 = 0; subject1 < data.subjects.length; subject1++) {
-			for (int subject2 = 0; subject2 < data.subjects.length; subject2++) {
+		for (int subject1 = 0; subject1 < Data.SUBJECT_COUNT; subject1++) {
+			for (int subject2 = 0; subject2 < Data.SUBJECT_COUNT; subject2++) {
 				if (subject1 < subject2) {
 					// weight conflict by how many peopls want to study this,
 					// from combinationmatrix
@@ -169,10 +168,16 @@ public class InitialSchedule {
 		return conflictCount;
 	}
 
+	/**
+	 * Compute the number of students affected by conflicts, complexity
+	 * O(SUBJECT_COUNT^2 * Time(tutorialConflict))
+	 * 
+	 * @return number of conflicts
+	 */
 	public int globalConflict() {
 		int conflictCount = 0;
-		for (int subject1 = 0; subject1 < data.subjects.length; subject1++) {
-			for (int subject2 = 0; subject2 < data.subjects.length; subject2++) {
+		for (int subject1 = 0; subject1 < Data.SUBJECT_COUNT; subject1++) {
+			for (int subject2 = 0; subject2 < Data.SUBJECT_COUNT; subject2++) {
 				if (subject1 < subject2) {
 					// weight conflict by how many peopls want to study this,
 					// from combinationmatrix
@@ -185,7 +190,8 @@ public class InitialSchedule {
 	}
 
 	/**
-	 * Get if there is a tutorial conflict between two subjects
+	 * Get if there is a tutorial conflict between two subjects, rating,
+	 * complexity O(2*Time(internalConflict)+8*Time(hasSameSlotRating))
 	 * 
 	 * @param subject1
 	 * @param subject2
@@ -213,6 +219,14 @@ public class InitialSchedule {
 
 	}
 
+	/**
+	 * Get if there is a tutorial conflict between two subjects, rating,
+	 * complexity O(4*Time(internalConflict)+12*Time(hasSameSlot))
+	 * 
+	 * @param subject1
+	 * @param subject2
+	 * @return 1 if there is a tutorial conflict between two subjects, else 0
+	 */
 	private int tutorialConflict(int subject1, int subject2) {
 		return (((hasSameSlot(subject1, subject2, 1, 1)
 				|| hasSameSlot(subject1, subject2, 0, 1)
@@ -237,7 +251,8 @@ public class InitialSchedule {
 	}
 
 	/**
-	 * Test if two tutorial use the same slot
+	 * Test if two tutorial use the same slot, rating function, Complexity
+	 * O(TUTORIAL_COUNT^2)
 	 * 
 	 * @param subject1
 	 * @param subject2
@@ -250,8 +265,8 @@ public class InitialSchedule {
 		// for each of the 3 slot test if there use the same timeSlot
 
 		int result = 0;
-		for (int i = 0; i < data.subjects[subject1][tutorial1].length; i++) {
-			for (int j = 0; j < data.subjects[subject1][tutorial1].length; j++) {
+		for (int i = 0; i < Data.TUTORIAL_COUNT; i++) {
+			for (int j = 0; j < Data.TUTORIAL_COUNT; j++) {
 				if ((data.subjects[subject1][tutorial1][i] == data.subjects[subject2][tutorial2][j])) {
 					result += 1;
 				}
@@ -260,12 +275,21 @@ public class InitialSchedule {
 		return result;
 	}
 
+	/**
+	 * Test if two tutorial use the same slot, rating function, Complexity
+	 * O(TUTORIAL_COUNT^2)
+	 * 
+	 * @param subject1
+	 * @param subject2
+	 * @param tutorial1
+	 * @param tutorial2
+	 * @return
+	 */
 	private boolean hasSameSlot(int subject1, int subject2, int tutorial1,
 			int tutorial2) {
 		// for each of the 3 slot test if there use the same timeSlot
-
-		for (int i = 0; i < data.subjects[subject1][tutorial1].length; i++) {
-			for (int j = 0; j < data.subjects[subject1][tutorial1].length; j++) {
+		for (int i = 0; i < Data.TUTORIAL_COUNT; i++) {
+			for (int j = 0; j < Data.TUTORIAL_COUNT; j++) {
 				if ((data.subjects[subject1][tutorial1][i] == data.subjects[subject2][tutorial2][j])) {
 					return true;
 				}
@@ -275,7 +299,8 @@ public class InitialSchedule {
 	}
 
 	/**
-	 * * Check conflicts inside one subject
+	 * Check conflicts inside one subject, Complexity O(TUTORIAL_COUNT^2 *
+	 * TUTORIAL_GROUP_COUNT^2)
 	 * 
 	 * @param subject1
 	 * @return
@@ -283,10 +308,10 @@ public class InitialSchedule {
 	private int internalConflictRating(int subject1) {
 		int result = 0;
 		// for each of the 3 slot test if there use the same timeSlot
-		for (int tutorialGroup1 = 0; tutorialGroup1 < data.subjects[subject1].length; tutorialGroup1++) {
-			for (int tutorialGroup2 = 0; tutorialGroup2 < data.subjects[subject1].length; tutorialGroup2++) {
-				for (int i = 0; i < data.subjects[subject1][tutorialGroup1].length; i++) {
-					for (int j = 0; j < data.subjects[subject1][tutorialGroup1].length; j++) {
+		for (int tutorialGroup1 = 0; tutorialGroup1 < Data.TUTORIAL_GROUP_COUNT; tutorialGroup1++) {
+			for (int tutorialGroup2 = 0; tutorialGroup2 < Data.TUTORIAL_GROUP_COUNT; tutorialGroup2++) {
+				for (int i = 0; i < Data.TUTORIAL_COUNT; i++) {
+					for (int j = 0; j < Data.TUTORIAL_COUNT; j++) {
 						// add conflict inside tutorialGroup 1
 						if (((i != j) || (tutorialGroup1 != tutorialGroup2))
 								&& (data.subjects[subject1][tutorialGroup1][i] == data.subjects[subject1][tutorialGroup2][j])) {
@@ -300,7 +325,8 @@ public class InitialSchedule {
 	}
 
 	/**
-	 * Check conflicts inside one subject
+	 * Check conflicts inside one tutorialGroup subject, Complexity
+	 * O(TUTORIAL_COUNT^2)
 	 * 
 	 * @param subject1
 	 * @param tutorialGroup1
@@ -309,8 +335,8 @@ public class InitialSchedule {
 	private boolean internalConflict(int subject1, int tutorialGroup1) {
 		boolean result = false;
 		// for each of the 3 slot test if there use the same timeSlot
-		for (int i = 0; i < data.subjects[subject1][tutorialGroup1].length; i++) {
-			for (int j = 0; j < data.subjects[subject1][tutorialGroup1].length; j++) {
+		for (int i = 0; i < Data.TUTORIAL_COUNT; i++) {
+			for (int j = 0; j < Data.TUTORIAL_COUNT; j++) {
 				// add conflict inside tutorialGroup 1
 				if ((i != j)
 						&& (data.subjects[subject1][tutorialGroup1][i] == data.subjects[subject1][tutorialGroup1][j])) {

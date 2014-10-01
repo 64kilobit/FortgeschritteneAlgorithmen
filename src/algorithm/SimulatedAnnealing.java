@@ -12,10 +12,11 @@ public class SimulatedAnnealing {
 	private int subject;
 	private int tutorialGroup;
 
-	// probability to choose bad solution
+	// tempareture, probability to choose bad solution
 	private float temperature = 1f;
 	// cool down factor
 	private float coolingFactor = 0.99f;
+	// stop temperature
 	private float cutOff = 0.001f;
 	private int testPopulationCount = 1000;
 	// 0 for pick best,
@@ -38,7 +39,10 @@ public class SimulatedAnnealing {
 	}
 
 	/**
-	 * simulated annealing, try to get a better solution
+	 * Simulated annealing, try to get a better solution, complexity
+	 * O(ln(cutOff) / ln(coolingFactor) * ( testPopulationCount *( 1 +
+	 * Time(moveTutorial) + ln(testPopulationCount) +
+	 * Time(globalConflictRating)))
 	 */
 	public void simulatedAnnealing() {
 		int globalConflicts = -1;
@@ -87,7 +91,7 @@ public class SimulatedAnnealing {
 	}
 
 	/**
-	 * build a move operation
+	 * Build a move operation, complexity O(SLOT_COUNT)
 	 * 
 	 * @param slotCount
 	 * @return
@@ -124,7 +128,7 @@ public class SimulatedAnnealing {
 	}
 
 	/**
-	 * build a switch operation
+	 * Build a switch operation, complexity O(SLOT_COUNT)
 	 * 
 	 * @param slotCount
 	 * @return

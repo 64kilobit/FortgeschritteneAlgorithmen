@@ -14,8 +14,11 @@ import org.apache.commons.csv.CSVRecord;
 
 public class Data {
 
-	public static final int SUBJECT_COUNT = 19;
 	public static final int SLOT_COUNT = 25;
+	public static final int SUBJECT_COUNT = 19;
+	public static final int TUTORIAL_COUNT = 3;
+	public static final int TUTORIAL_GROUP_COUNT = 3;
+
 	public static final String COMBINATIONS_FILE_NAME = "data/combinations.csv";
 	public static final String TAKEN_SLOTS_FILE_NAME = "data/takenSlots.csv";
 	public static final String SUBJECTS_FILE_NAME = "data/subjects.csv";
@@ -78,6 +81,9 @@ public class Data {
 		System.out.println(Arrays.deepToString(subjects));
 	}
 
+	/**
+	 * Read combination matrix and subject population
+	 */
 	public void loadCombinations() {
 		// init arrays
 		combinations = new int[SUBJECT_COUNT][SUBJECT_COUNT];
