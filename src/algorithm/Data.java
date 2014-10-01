@@ -22,7 +22,7 @@ public class Data {
 
 	// for finding most populated subject
 	public List<Subject> subjectPopulationSorted = new ArrayList<Subject>();
-	// for lookinh up population
+	// for looking up population
 	public List<Subject> subjectPopulationUnsorted = new ArrayList<Subject>();
 	// combination matrix
 	public int[][] combinations;
@@ -94,7 +94,7 @@ public class Data {
 				// if we are in last line, read sums to array
 				if (i == SUBJECT_COUNT) {
 					for (int j = 0; j < csvRecord.size(); j++) {
-						subjectPopulationSorted.add(new Subject(j, Integer
+						subjectPopulationUnsorted.add(new Subject(j, Integer
 								.parseInt(csvRecord.get(j).trim())));
 					}
 				} else {
@@ -111,7 +111,10 @@ public class Data {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		subjectPopulationUnsorted.addAll(subjectPopulationSorted);
+
+		subjectPopulationSorted.addAll(subjectPopulationUnsorted);
+		// subjectPopulationSorted.addAll(subjectPopulationUnsorted);
+		// subjectPopulationSorted.addAll(subjectPopulationUnsorted);
 		// sort
 		Collections.sort(subjectPopulationSorted, Collections.reverseOrder());
 
@@ -121,6 +124,7 @@ public class Data {
 	 * load taken slots of the lectures
 	 */
 	public void loadTakenSlots() {
+		System.out.println("Reading taken slots");
 		try {
 			// load csv from file
 			List<CSVRecord> subjectRecords = CSVParser.parse(
@@ -154,6 +158,7 @@ public class Data {
 										+ slot + " time: " + slotCounter);
 								// !!!!!! GRI is 4 times in the takenSlot.csv,
 								// every other element is in there 3 times
+								// we prune it for comformity reasons
 								if (slotCounter < 3) {
 									subjects[subject][0][slotCounter] = slot;
 								}

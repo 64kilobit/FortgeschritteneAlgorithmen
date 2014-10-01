@@ -8,16 +8,19 @@ public class SimulatedAnnealing {
 
 	public InitialSchedule initialSchedule = new InitialSchedule();
 
-	//variables for chosen subject and tutorial
+	// variables for chosen subject and tutorial
 	private int subject;
 	private int tutorialGroup;
 
 	// probability to choose bad solution
-	private float p = 1f;
-	// cool down decrement
-	private float deltaP = 0.1f;
-	private float cutOff = 0.2f;
-	private int testCount = 10000;
+	private float temperature = 1f;
+	// cool down factor
+	private float coolingFactor = 0.99f;
+	private float cutOff = 0.001f;
+	private int testPopulationCount = 1000;
+	// 0 for pick best,
+	// (0,1] for pick (pickFactor * temperature * testPopulationCount)
+	private float pickFactor = 0.1f;
 
 	// test
 	public static void main(String[] args) {
@@ -32,20 +35,22 @@ public class SimulatedAnnealing {
 	private void selectTutorialGroup() {
 		subject = (int) Math.random() * initialSchedule.data.subjects.length;
 		tutorialGroup = (int) (Math.random() + 1);
-
 	}
 
 	/**
 	 * simulated annealing, try to get a better solution
 	 */
 	public void simulatedAnnealing() {
+		int globalConflicts = -1;
+		int iteration = 0;
 
-		while (p > cutOff) {
+		// stop if cold enough or zero conflict solution is found
+		while (temperature > cutOff && !(globalConflicts == 0)) {
 			List<Operation> operationList = new ArrayList<Operation>();
 			// choose between 1 and 3 slots to move/switch
 			int slotCount = (int) Math.floor(1 + 2 * Math.random());
 
-			for (int j = 0; j < testCount + 1; j++) {
+			for (int j = 0; j < testPopulationCount + 1; j++) {
 
 				Operation operation;
 
@@ -63,16 +68,21 @@ public class SimulatedAnnealing {
 			Collections.sort(operationList);
 
 			// get one of the good operations
-			Operation selected = operationList.get((int) (testCount * p));
-
-			// if operation is good
+			Operation selected = operationList.get((int) (pickFactor
+					* temperature * (float) testPopulationCount));
+			// if operation is good, write it
 			if ((float) selected.rating <= (float) initialSchedule
-					.globalConflictRating() * (1f + p)) {
+					.globalConflictRating() * (1f + temperature)) {
 				// permanently write operation
 				selected.write();
 			}
+			globalConflicts = initialSchedule.globalConflict();
+			System.out.format("Iteration %d, temperature: %f, conflicts: %d%n",
+					iteration, temperature, globalConflicts);
+			iteration++;
+			// cooling
+			temperature *= coolingFactor;
 
-			p -= deltaP;
 		}
 	}
 
@@ -95,18 +105,20 @@ public class SimulatedAnnealing {
 		int start = (int) (Math.random() * 3);
 		for (int i = 0; i < slotCount; i++) {
 
-			// Slots anhand von anzahlSlots zufällig wählen
+			// pick a random slot
 			int newSlot = (int) (Math.random() * Data.SLOT_COUNT);
-
 			int tutorial = (start + i) % 3;
-
+			// tutorial index
 			operation.operation[i][0][0] = tutorial;
+			// tutorial value
 			operation.operation[i][0][1] = initialSchedule.data.subjects[subject][tutorialGroup][tutorial];
+			// tutorial index
 			operation.operation[i][1][0] = tutorial;
+			// tutorial new slot
 			operation.operation[i][1][1] = newSlot;
 
 		}
-
+		operation.computeRating();
 		return operation;
 
 	}
@@ -154,7 +166,7 @@ public class SimulatedAnnealing {
 			operation.operation[i][1][1] = initialSchedule.data.subjects[randomSubject][randomTutorialGroup][randomTutorial];
 
 		}
-
+		operation.computeRating();
 		return operation;
 
 	}

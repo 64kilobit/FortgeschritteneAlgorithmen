@@ -67,11 +67,19 @@ public class Operation implements Comparable<Operation> {
 		}
 	}
 
-	@Override
-	public int compareTo(Operation o) {
+	public void computeRating() {
 		write();
 		rating = simulatedAnnealing.initialSchedule.globalConflictRating();
 		undo();
-		return rating;
+	}
+
+	@Override
+	public int compareTo(Operation o) {
+		return rating - o.rating;
+	}
+
+	@Override
+	public String toString() {
+		return "rating: " + rating;
 	}
 }
