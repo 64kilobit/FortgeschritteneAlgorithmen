@@ -91,7 +91,7 @@ public class SimulatedAnnealing {
 	}
 
 	/**
-	 * Build a move operation, complexity O(SLOT_COUNT)
+	 * Build a move operation, complexity O(SLOT_COUNT * Time(globalConflictRating))
 	 * 
 	 * @param slotCount
 	 * @return
@@ -128,7 +128,7 @@ public class SimulatedAnnealing {
 	}
 
 	/**
-	 * Build a switch operation, complexity O(SLOT_COUNT)
+	 * Build a switch operation, complexity O(SLOT_COUNT * Time(globalConflictRating))
 	 * 
 	 * @param slotCount
 	 * @return
