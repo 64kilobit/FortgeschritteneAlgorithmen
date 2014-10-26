@@ -191,7 +191,7 @@ public class InitialSchedule {
 
 	/**
 	 * Get if there is a tutorial conflict between two subjects, rating,
-	 * complexity O(2*Time(internalConflict)+8*Time(hasSameSlotRating))
+	 * complexity O(2*Time(internalConflictRating)+8*Time(hasSameSlotRating))
 	 * 
 	 * @param subject1
 	 * @param subject2
